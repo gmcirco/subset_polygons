@@ -1,0 +1,50 @@
+---
+title: "Subset Polygons"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(sf)
+library(tidyverse)
+
+hartford <- st_read("C:/Users/gioc4/Desktop/hartford.shp")
+cfs <- st_read("C:/Users/gioc4/Desktop/cfs.shp")
+
+```
+
+## Subset Polygons
+
+This is a bit of code intended to mimick the existing ESRI [subset polygons ](https://pro.arcgis.com/en/pro-app/latest/tool-reference/geostatistical-analyst/generate-subset-polygons.htm)
+function. The intended use is obtaining non-overlapping polygons with an equal 
+number of points in each area. The general algorithm is:
+
+1. Use iterative nearest neighbors to identify equal sized clusters
+2. Create a thiessen tessellation around all points
+3. Merge and dissolve thiessen polygons by cluster id
+
+## Example
+
+Here is an example using a random sample of calls for service data from 
+Hartford, CT in 2020. The goal is to identify 8 patrol areas with an equal number 
+of calls for service. Here, we can specify g = 8 for eight groups, and then add
+the point `p` and polygon `a` shapefiles. 
+
+```{r, message=FALSE, warning=FALSE}
+library(sf)
+library(tidyverse)
+
+source("C:/Users/gioc4/Dropbox/subset_polygons/subset_polygons.R")
+
+# find polygons that make 8 equal-sized groups
+# based on calls for service
+cfs_groups <- subset_polygons(p = cfs, 
+                              a = hartford, 
+                              g = 8, 
+                              plot_map = T, 
+                              data_return = "point")
+
+# check size of groups
+table(cfs_groups$grp)
+```
